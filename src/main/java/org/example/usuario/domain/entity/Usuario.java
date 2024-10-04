@@ -25,7 +25,6 @@ public class Usuario {
     @Column(nullable = false)
     private String senha;
 
-
     public Long getId() {
         return id;
     }
