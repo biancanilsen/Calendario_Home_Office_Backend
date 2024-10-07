@@ -1,5 +1,6 @@
 package org.example.usuario.application;
 
+import org.example.usuario.domain.DTO.UsuarioLogin;
 import org.example.usuario.domain.entity.Usuario;
 import org.example.usuario.domain.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -17,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3001")
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
@@ -30,6 +32,17 @@ public class UsuarioController {
         return ResponseEntity.ok(novoUsuario);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUsuario(@RequestBody UsuarioLogin loginRequest) {
+        Optional<Usuario> usuarioOpt = usuarioService.autenticarUsuario(loginRequest.getEmail(), loginRequest.getSenha());
+
+        if (usuarioOpt.isPresent()) {
+            return ResponseEntity.ok("Login bem-sucedido");
+        } else {
+            return ResponseEntity.status(401).body("Email ou senha incorretos");
+        }
+    }
+
     @GetMapping("/lista-usuarios")
     public ResponseEntity<List<Usuario>> listarUsuarios() {
         List<Usuario> usuarios = usuarioService.listarUsuarios();
@@ -40,5 +53,11 @@ public class UsuarioController {
     public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable UUID id) {
         Optional<Usuario> usuario = usuarioService.buscarUsuarioPorId(id);
         return usuario.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/login-google")
+    public ResponseEntity<Boolean> verificarEmailCadastrado(@RequestParam String email) {
+        boolean emailExiste = usuarioService.verificarEmailCadastrado(email);
+        return ResponseEntity.ok(emailExiste);
     }
 }
